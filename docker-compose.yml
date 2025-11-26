@@ -1,0 +1,58 @@
+services:
+  # 1. Base de Datos PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: bookfrontera-db
+    environment:
+      POSTGRES_DB: bookfrontera
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123 # Cambia esto en producción
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" # Opcional: solo si quieres acceder a la BD desde tu PC local
+    networks:
+      - app-network
+
+  # 2. Backend Spring Boot
+  backend:
+    build: ./backend
+    container_name: bookfrontera-api
+    depends_on:
+      - db
+    environment:
+      # Conexión a la BD (usa el nombre del servicio 'db')
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bookfrontera
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      
+      # Google OAuth2 (Rellena esto con tus credenciales reales o crea un archivo .env)
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      
+      # Configuración de CORS permitiendo el origen del frontend (que corre en el puerto 80 interno, mapeado al 5173 o 80 externo)
+      # Nota: Al usar Nginx como proxy, la petición viene del mismo origen, pero por seguridad:
+      app.cors.allowed-origins: http://localhost:5173,http://localhost
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+  # 3. Frontend React + Nginx
+  frontend:
+    build: ./frontend
+    container_name: bookfrontera-web
+    depends_on:
+      - backend
+    ports:
+      - "5173:80" # Mapeamos el puerto 80 del contenedor al 5173 de tu máquina
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge

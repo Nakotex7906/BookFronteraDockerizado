@@ -1,0 +1,15 @@
+# Archivos de entorno (SECRETOS)
+.env
+
+# Carpetas de compilación (Pesadas e innecesarias porque Docker las crea)
+/backend/target/
+/frontend/node_modules/
+/frontend/dist/
+
+# Archivos de IDE (Personales)
+.idea/
+.vscode/
+*.iml
+
+# Logs y sistemas
+.DS_Store
