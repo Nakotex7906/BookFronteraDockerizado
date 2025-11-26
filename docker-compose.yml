@@ -6,33 +6,41 @@ services:
     environment:
       POSTGRES_DB: bookfrontera
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password123 # Cambia esto en producción
+      POSTGRES_PASSWORD: password123
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432" # Opcional: solo si quieres acceder a la BD desde tu PC local
+      - "5432:5432"
     networks:
       - app-network
+    # --- CAMBIO 1: Agregamos Healthcheck ---
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # 2. Backend Spring Boot
   backend:
     build: ./backend
     container_name: bookfrontera-api
+    # --- CAMBIO 2: Esperamos a que la DB esté saludable (healthy) ---
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
-      # Conexión a la BD (usa el nombre del servicio 'db')
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bookfrontera
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: password123
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       
-      # Google OAuth2 (Rellena esto con tus credenciales reales o crea un archivo .env)
+      # --- CAMBIO 3: Definimos el dialecto explícitamente para evitar el error de metadata ---
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      
+      # Google OAuth2
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       
-      # Configuración de CORS permitiendo el origen del frontend (que corre en el puerto 80 interno, mapeado al 5173 o 80 externo)
-      # Nota: Al usar Nginx como proxy, la petición viene del mismo origen, pero por seguridad:
       app.cors.allowed-origins: http://localhost:5173,http://localhost
     ports:
       - "8080:8080"
@@ -46,7 +54,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "5173:80" # Mapeamos el puerto 80 del contenedor al 5173 de tu máquina
+      - "5173:80"
     networks:
       - app-network
 
