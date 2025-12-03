@@ -1,66 +1,49 @@
 services:
-  # 1. Base de Datos PostgreSQL
   db:
     image: postgres:15-alpine
     container_name: bookfrontera-db
     environment:
-      POSTGRES_DB: bookfrontera
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password123
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
-    networks:
-      - app-network
-    # --- CAMBIO 1: Agregamos Healthcheck ---
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 10s
       timeout: 5s
       retries: 5
 
-  # 2. Backend Spring Boot
   backend:
+    # Ajusta este nombre si tu carpeta se llama diferente
     build: ./backend
-    container_name: bookfrontera-api
-    # --- CAMBIO 2: Esperamos a que la DB esté saludable (healthy) ---
+    container_name: bookfrontera-back
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bookfrontera
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: password123
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      
-      # --- CAMBIO 3: Definimos el dialecto explícitamente para evitar el error de metadata ---
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-      
-      # Google OAuth2
-      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      
-      app.cors.allowed-origins: http://localhost:5173,http://localhost
-    ports:
-      - "8080:8080"
-    networks:
-      - app-network
 
-  # 3. Frontend React + Nginx
   frontend:
+    # Ajusta este nombre si tu carpeta se llama diferente
     build: ./frontend
-    container_name: bookfrontera-web
-    depends_on:
-      - backend
+    container_name: bookfrontera-front
     ports:
       - "5173:80"
-    networks:
-      - app-network
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
-
-networks:
-  app-network:
-    driver: bridge

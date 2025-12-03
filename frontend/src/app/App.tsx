@@ -11,6 +11,9 @@ import StudyRooms from "../pages/StudyRooms/StudyRooms";
 import TeamStudyInfo from "../pages/info/TeamStudyInfo.tsx";
 import TimeManagementInfo from "../pages/info/TimeManagementInfo.tsx";
 import EquipmentInfo from "../pages/info/EquipmentInfo.tsx";
+// 1. IMPORTAR LA NUEVA PÁGINA
+import AdminPanelPage from "../pages/AdminPanelPage/AdminPanelPage.tsx";
+import LoginPage from "../pages/Login/LoginPage"
 
 function AppLayout() {
     const location = useLocation();
@@ -20,7 +23,6 @@ function AppLayout() {
     const showNavFooter = !noNavFooterPaths.includes(location.pathname);
 
     return (
-        // 1. Contenedor principal: Ocupa al menos el 100% de la altura de la ventana
         <div className="flex min-h-screen flex-col bg-[#f4f6f9]">
 
             {showNavFooter && <Navbar />}
@@ -31,21 +33,26 @@ function AppLayout() {
                 <Routes>
                     {/* --- Rutas Públicas --- */}
                     <Route path="/" element={<Home />} />
-                    {/* RUTAS DE INFORMACIÓN */}
                     <Route path="/info/equipo" element={<TeamStudyInfo />} />
                     <Route path="/info/tiempo" element={<TimeManagementInfo />} />
                     <Route path="/info/equipamiento" element={<EquipmentInfo />} />
+                    <Route path="/login" element={<LoginPage />} />
 
                     {/* --- Rutas Protegidas --- */}
                     <Route element={<ProtectedRoute />}>
                         <Route path="/mis-reservas" element={<MyReservations />} />
                         <Route path="/salas-de-estudio" element={<StudyRooms />} />
                         <Route path="/reservation-success" element={<ReservationSuccess />} />
+
+                        {/* 2. RUTA DE ADMIN PANEL */}
+                        {/* Al estar dentro de ProtectedRoute, requiere login.
+                            Adicionalmente, el Navbar oculta el enlace si no eres ADMIN.
+                            El backend rechazará las peticiones de datos si no se es ADMIN. */}
+                        <Route path="/admin/panel" element={<AdminPanelPage />} />
                     </Route>
                 </Routes>
             </div>
 
-            {/* El footer se renderiza al final del flex container */}
             {showNavFooter && <Footer />}
         </div>
     );

@@ -4,6 +4,8 @@ import type {
     ReservationRequest,
     ReservationResponse,
     MyReservationsResponse,
+    ReservationOnBehalfRequest,
+    ReservationDetail
 } from "../types/schedule";
 import { AxiosError } from "axios";
 
@@ -65,4 +67,26 @@ export class AvailabilityApi {
             throw new Error(errorMessage(e));
         }
     }
+
+    static async createOnBehalf(
+        payload: ReservationOnBehalfRequest
+    ): Promise<void> {
+        try {
+            await http.post("/reservations/on-behalf", payload);
+        } catch (e) {
+            throw new Error(errorMessage(e));
+        }
+    }
+
+
+    // (ADMIN) Permite ver quién tiene reservada una sala específica
+    static async getReservationsByRoom(roomId: number): Promise<ReservationDetail[]> {
+        try {
+            const { data } = await http.get<ReservationDetail[]>(`/room/${roomId}`);
+            return data;
+        } catch (e) {
+            throw new Error(errorMessage(e));
+        }
+    }
+
 }
