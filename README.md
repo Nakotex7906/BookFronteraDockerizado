@@ -44,17 +44,17 @@ graph TD
     Google[("Google System<br/>(OAuth2 & Calendar API)")]:::external
     Cloudinary[("Cloudinary<br/>(Almacenamiento Imágenes)")]:::external
 
-    %% Relaciones
-    Student -->|Usa (HTTPS)| Frontend
-    Admin -->|Usa (HTTPS)| Frontend
+    %% Relaciones (Sintaxis corregida con comillas)
+    Student -- "Usa (HTTPS)" --> Frontend
+    Admin -- "Usa (HTTPS)" --> Frontend
 
-    Frontend -->|Solicita datos (JSON/HTTPS)| Backend
+    Frontend -- "Solicita datos (JSON/HTTPS)" --> Backend
     
-    Backend -->|Lee/Escribe (JDBC)| Database
+    Backend -- "Lee/Escribe (JDBC)" --> Database
     
-    Backend -->|Autenticación & Sincronización Eventos| Google
-    Backend -->|Sube/Borra imágenes de salas| Cloudinary
+    Backend -- "Autenticación & Sincronización Eventos" --> Google
+    Backend -- "Sube/Borra imágenes de salas" --> Cloudinary
 
     %% Notas de flujo
     linkStyle 2 stroke:#0a3fa6,stroke-width:2px;
-    linkStyle 4 stroke:#0a3fa6,stroke-width:2px;   
+    linkStyle 4 stroke:#0a3fa6,stroke-width:2px;
