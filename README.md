@@ -18,7 +18,11 @@ Este proyecto está dockerizado. Sigue estos pasos para levantarlo en cualquier 
    Abre una terminal en esta carpeta y ejecuta:
    ```bash
    docker-compose up --build
-   graph TD
+   ```
+## 🏗 Arquitectura del Sistema
+
+```mermaid
+graph TD
     %% Estilos
     classDef person fill:#08427b,stroke:#052e56,color:white;
     classDef container fill:#1168bd,stroke:#0b4884,color:white;
@@ -53,4 +57,4 @@ Este proyecto está dockerizado. Sigue estos pasos para levantarlo en cualquier 
 
     %% Notas de flujo
     linkStyle 2 stroke:#0a3fa6,stroke-width:2px;
-    linkStyle 4 stroke:#0a3fa6,stroke-width:2px;
+    linkStyle 4 stroke:#0a3fa6,stroke-width:2px;   
